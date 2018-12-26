@@ -1,0 +1,94 @@
+import random
+import tkinter
+
+class RandomBall():
+    '''
+    定义球的类
+    '''
+
+    def __init__(self, canvas, scrnwidth, scrnheight):
+        #canvas：画布
+        self.canvas = canvas
+        #圆心坐标
+        self.xpos = random.randint(10, int(scrnwidth)-20)
+        self.ypos = random.randint(10, int(scrnheight)-20)
+        #球的速度，分速度为2个轴
+        self.xvelocity = random.randint(2, 5)
+        self.yvelocity = random.randint(2, 5)
+        #半径
+        self.radius = random.randint(20, 120)
+        #颜色RGB
+        c = lambda: random.randint(0, 255)
+        self.color = '#%02x%02x%02x'%(c(), c(), c())
+        #屏幕长宽
+        self.scrnwidth = scrnheight
+        self.scrnheight = scrnheight
+
+        #在画布上画球
+    def create_ball(self):
+        x1 = self.xpos - self.radius
+        y1 = self.ypos + self.radius
+        x2 = self.xpos + self.radius
+        y2 = self.ypos - self.radius
+        self.item = self.canvas.create_oval(x1, y1, x2, y2, fill=self.color, outline=self.color)
+
+    #球的移动
+    def move_ball(self):
+        self.xpos += self.xvelocity
+        self.ypos += self.yvelocity
+        #球碰到屏幕边缘弹回
+        if self.xpos + self.radius >= self.scrnwidth\
+                or self.xpos + self.radius <= 20:
+            self.xvelocity = -self.xvelocity
+        if self.ypos + self.radius >= self.scrnheight\
+                or self.ypos + self.radius <= 20:
+            self.yvelocity = -self.yvelocity
+        #球的移动函数，就是移动复制
+        self.canvas.move(self.item, self.xvelocity, self.yvelocity)
+
+class ScreenSanver():
+    '''
+    定义屏保
+    '''
+    def __init__(self):
+        #把N个球放在队列中
+        self.balls = []
+        #球的数量
+        self.num_balls = random.randint(6, 20)
+        #生成框架
+        self.root = tkinter.Tk()
+        #取消边框
+        self.root.overrideredirect(1)
+        #制作透明窗口
+        self.root.attributes('-alpha', 0.3)
+        #任何鼠标移动都退出屏保
+        self.root.bind('<Motion>', self.myquit)
+        #任何键盘动作都可以退出屏保
+        self.root.bind('<Key>', self.myquit)
+        #得到屏幕大小规格
+        w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        #创建画布
+        self.canvas = tkinter.Canvas(self.root, width=w, height=h)
+        self.canvas.pack()
+
+        #画布上画球
+        for i in range(self.num_balls):
+            ball = RandomBall(self.canvas, scrnwidth=w, scrnheight=h)
+            ball.create_ball()
+            self.balls.append(ball)
+
+        self.run_screen_saver()
+        self.root.mainloop()
+
+    #球的运动函数
+    def run_screen_saver(self):
+        for ball in self.balls:
+             ball.move_ball()
+        self.canvas.after(20, self.run_screen_saver)
+
+    #析构函数
+    def myquit(self, e):
+        self.root.destroy()
+
+if __name__ == "__main__":
+    ScreenSanver()
